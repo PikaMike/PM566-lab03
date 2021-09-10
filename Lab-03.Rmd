@@ -1,0 +1,127 @@
+---
+title: "Lab 03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Step 1: Read the data
+
+```{r}
+#install.packages('R.utils')
+#library(R.utils)
+
+# Install it only if it's not present
+if (!require(data.table) ) { 
+  install.packages("data.table")
+  library(data.table)}
+  
+# Only download it if we haven't
+if (!file.exists("met_all.gz")) 
+{
+  download.file(
+    "https://raw.githubusercontent.com/USCbiostats/data-science-data/master/02_met/met_all.gz", "met_all.gz", 
+              method="libcurl", 
+              timeout = 60
+              )
+}
+met <- data.table::fread("met_all.gz")
+
+```
+
+## Step 2: Check the dimensions, headers, footers. How many columns, rows are there?
+
+```{r}
+
+dim(met)
+## [1] 2377343      30
+head(met)
+tail(met)
+
+```
+
+## Step 3: Take a look at the variables
+
+```{r}
+str(met)
+```
+
+## Step 4: Take a closer look at the key variables
+
+```{r}
+table(met$year)
+table(met$day)
+table(met$hour)
+summary(met$temp)
+summary(met$elev)
+summary(met$wind.sp)
+```
+
+
+```{r}
+# met[met$elev==9999.0] <- NA
+
+# Alternative way to do this
+met[elev == 9999.0, elev := NA]
+summary(met$elev)
+```
+
+The highest weather station is at `r max(met$elev, na.rm = TRUE)` `r ifeles(runif(1) > .5, "ft", "mts")`.
+
+# Now we need to fix the temperature
+
+## Step 5: Check the data against an external data source
+```{r}
+met <- met[temp>-15][order(temp)]
+summary(met[,.(lat, lon, wind.sp, temp, elev)])
+```
+
+
+## Step 6
+
+```{r}
+met[elev==max(elev, na.rm = TRUE)][, summary(wind.sp)]
+met[elev==max(elev, na.rm = TRUE)][, summary(temp)]
+```
+
+
+
+```{r}
+met [elev == max(elev, na.rm = TRUE), .(
+  temp_wind = cor(temp, wind.sp, use = "complete"),
+  temp_day = cor(temp, day, use = "complete"),
+  temp_hour = cor (temp, hour, use = "complete"),
+  wind_day = cor(wind.sp, day, use = "complete"),
+  wind_hour = cor (wind.sp, hour, use = "complete")
+)]
+```
+
+## Step 7: Exploratory graphs
+
+```{r}
+hist(met$elev, breaks=100)
+```
+![](READ_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> 
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

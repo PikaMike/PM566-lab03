@@ -69,18 +69,19 @@ met[elev == 9999.0, elev := NA]
 summary(met$elev)
 ```
 
-The highest weather station is at `r max(met$elev, na.rm = TRUE)` `r ifeles(runif(1) > .5, "ft", "mts")`.
+The highest weather station is at `r max(met$elev, na.rm = TRUE)` `r ifelse(runif(1) > .5, "ft", "mts")`.
 
 # Now we need to fix the temperature
 
 ## Step 5: Check the data against an external data source
+
 ```{r}
 met <- met[temp>-15][order(temp)]
 summary(met[,.(lat, lon, wind.sp, temp, elev)])
 ```
 
 
-## Step 6
+## Step 6: Calculate summary statistics
 
 ```{r}
 met[elev==max(elev, na.rm = TRUE)][, summary(wind.sp)]
@@ -104,7 +105,8 @@ met [elev == max(elev, na.rm = TRUE), .(
 ```{r}
 hist(met$elev, breaks=100)
 ```
-![](READ_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> 
+## ![](READ_files/figure-gfm/unnamed-chunk-10-1.png)
+<!-- --> 
 
 ## R Markdown
 
